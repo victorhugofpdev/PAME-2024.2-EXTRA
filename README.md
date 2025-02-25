@@ -64,4 +64,8 @@ Caso não queira criar um novo registro, utilize os usuários base:
 - **PostgreSQL** - Banco de dados
 - **Readline-Sync** - Interação via terminal
 - **Argon2** - Hashing de senhas
+---
+## **4. Observações**
+- *.env** - A .env está no repositorio para mais fácil avaliação, mesmo nao sendo ideal.
+
 
