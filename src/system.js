@@ -68,10 +68,11 @@ class System {
             const birthDate = readline.question("Data de nascimento (AAAA-MM-DD): ");
 
             const created_user = await Client.create(name, birthDate, cpf, email, hashedpassword);
-            if (created_user) {
+            if (created_user[0]) {
                 console.log("Cliente registrado com sucesso!");
             } else {
                 console.log("Falha ao registrar cliente, tente novamente!");
+                console.log(created_user[1].message);
             }
         } else if (type === 2) {
             const name = readline.question("Nome: ");
@@ -82,10 +83,11 @@ class System {
             const username = readline.question("Nome de usuário: ");
 
             const created_staff = await Staff.create(name, username, cpf, email, hashedpassword);
-            if (created_staff) {
+            if (created_staff[0]) {
                 console.log("Funcionário registrado com sucesso!");
             } else {
                 console.log("Falha ao registrar funcionário, tente novamente!");
+                console.log(created_staff[1].message);
             }
         } else {
             console.log("Opção inválida.");

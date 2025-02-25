@@ -24,9 +24,9 @@ class Client {
                 data: { name, birthDate: new Date(birthDate), cpf, email, password },
             });
 
-            return true;
+            return [true];
         } catch (error) {
-            return false;
+            return [false, error];
         }
     }
 
@@ -73,7 +73,6 @@ class Client {
                     id: true,
                 },
             });
-            console.log(clients);
             console.log("\n=== Todos os Clientes ===");
             clients.forEach((client) => console.log(`Nome: ${client.name}; ID do Cliente: ${client.id}`));
             const moreInfo = readline.question("Gostaria de ver mais informações sobre um cliente? (s/n)");

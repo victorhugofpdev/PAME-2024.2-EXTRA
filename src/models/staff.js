@@ -24,9 +24,9 @@ class Staff {
                 data: { name, username, cpf, email, password },
             });
 
-            return true;
+            return [true];
         } catch (error) {
-            return false;
+            return [false, error];
         }
     }
 
