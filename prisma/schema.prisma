@@ -15,6 +15,7 @@ model Client {
   email      String @unique
   password   String
   reservations Reservations[]
+  ratings      Ratings[]
 }
 
 model Staff {
@@ -44,12 +45,16 @@ model Reservations {
   status    String
   checkIn   DateTime
   checkOut  DateTime
+  ratings   Ratings[]
 }
 
-model Ratings{
-  id       Int   @id @default(autoincrement())
-  clientId Int 
-  rate     Int
-  reservation_id  Int
-  comment  String 
+model Ratings {
+  id             Int     @id @default(autoincrement())
+  clientId       Int
+  reservationId Int
+  rate           Int
+  comment        String
+
+  client        Client      @relation(fields: [clientId], references: [id])
+  reservation    Reservations @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 }

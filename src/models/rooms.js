@@ -4,38 +4,41 @@ import readline from "readline-sync";
 
 class Room {
     async getAll() {
-        return await prisma.rooms.findMany();
+        try {
+            return await prisma.rooms.findMany();
+        } catch (error) {
+            console.error("Erro ao buscar quartos:", error);
+            return [];
+        }
     }
 
     async create() {
-        const name = readline.question("Room name: ");
+        try {
+            const name = readline.question("Nome do quarto: ");
+            const description = readline.question("Descrição do quarto: ");
+            const beds = readline.questionInt("Número de camas: ");
+            const pricePerNight = readline.questionFloat("Preço por noite: ");
 
-        const existingRoom = await prisma.rooms.findUnique({
-            where: { name },
-        });
+            await prisma.rooms.create({
+                data: { name, description, beds, pricePerNight },
+            });
 
-        if (existingRoom) {
-            console.log("Room with this name already exists!");
-            return;
+            console.log("Quarto adicionado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao criar quarto:", error);
         }
-
-        const description = readline.question("Room description: ");
-        const beds = readline.questionInt("Number of beds: ");
-        const pricePerNight = readline.questionFloat("Price per night: ");
-
-        await prisma.rooms.create({
-            data: { name, description, beds, pricePerNight },
-        });
-
-        console.log("Room successfully added!");
     }
 
     async displayRooms() {
-        const rooms = await this.getAll();
-        console.log("\n=== Available Rooms ===");
-        rooms.forEach((room) =>
-            console.log(`ID: ${room.id} - ${room.name} (${room.beds} beds) - $${room.pricePerNight}/night`)
-        );
+        try {
+            const rooms = await this.getAll();
+            console.log("\n=== Quartos Disponíveis ===");
+            rooms.forEach((room) =>
+                console.log(`ID: ${room.id} - ${room.name} (${room.beds} camas) - R$${room.pricePerNight}/noite`)
+            );
+        } catch (error) {
+            console.error("Erro ao exibir quartos:", error);
+        }
     }
 }
 

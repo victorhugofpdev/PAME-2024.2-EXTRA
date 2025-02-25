@@ -3,29 +3,43 @@ const prisma = new PrismaClient();
 
 class Rating {
     static async create(clientId, reservationId, rating, comment) {
-        prisma.ratings.create({
-            clientId: clientId,
-            reservation_id: reservationId,
-            rate: rating,
-            comment: comment,
-        });
-        console.log(
-            `Rating saved: Client ${clientId}, Reservation ${reservationId}, Rating ${rating}, Comment ${comment}`
-        );
+        try {
+            await prisma.ratings.create({
+                data: {
+                    client: { connect: { id: clientId } },
+                    reservation: { connect: { id: reservationId } },
+                    rate: rating,
+                    comment: comment,
+                },
+            });
+
+            console.log(
+                `Avaliação salva: Cliente ${clientId}, Reserva ${reservationId}, Avaliação ${rating}, Comentário ${comment}`
+            );
+        } catch (error) {
+            console.error("Erro ao salvar avaliação:", error);
+        }
     }
 
     static async viewRatings(clientId) {
-        const ratings = prisma.ratings.findMany({
-            where: {
-                clientId: clientId,
-            },
-            select: {
-                reservation_id: true,
-                rate: true,
-                comment: true,
-            },
-        });
-        console.log(`Displaying ratings for Client ${clientId}`);
-        console.log(ratings);
+        try {
+            const ratings = await prisma.ratings.findMany({
+                where: {
+                    clientId: clientId,
+                },
+                select: {
+                    reservationId: true,
+                    rate: true,
+                    comment: true,
+                },
+            });
+
+            console.log(`Exibindo avaliações para o Cliente ${clientId}`);
+            console.log(ratings);
+        } catch (error) {
+            console.error("Erro ao exibir avaliações:", error);
+        }
     }
 }
+
+export default Rating;
