@@ -1,55 +1,97 @@
 import { PrismaClient } from "@prisma/client";
+import readline from "readline-sync";
 const prisma = new PrismaClient();
 
 class Client {
     async create(name, birthDate, cpf, email, password) {
-        if (!name || !birthDate || !cpf || !email || !password) {
-            throw new Error("All fields are required");
-        }
+        try {
+            if (!name || !birthDate || !cpf || !email || !password) {
+                throw new Error("Todos os campos são obrigatórios");
+            }
 
-        const existingClientByEmail = await prisma.client.findUnique({ where: { email } });
-        if (existingClientByEmail) {
-            throw new Error("Email already exists");
-        }
+            const existingClientByEmail = await prisma.client.findUnique({ where: { email } });
+            const existingStaffByEmail = await prisma.staff.findUnique({ where: { email } });
+            if (existingClientByEmail || existingStaffByEmail) {
+                throw new Error("Email já existe em funcionários ou clientes");
+            }
 
-        const existingClientByCpf = await prisma.client.findUnique({ where: { cpf } });
-        if (existingClientByCpf) {
-            throw new Error("CPF already exists");
-        }
+            const existingStaffByCpf = await prisma.staff.findUnique({ where: { cpf } });
+            const existingClientByCpf = await prisma.client.findUnique({ where: { cpf } });
+            if (existingClientByCpf || existingStaffByCpf) {
+                throw new Error("CPF já existe em clientes");
+            }
+            await prisma.client.create({
+                data: { name, birthDate: new Date(birthDate), cpf, email, password },
+            });
 
-        return await prisma.client.create({
-            data: { name, birthDate: new Date(birthDate), cpf, email, password },
-        });
+            return [true];
+        } catch (error) {
+            return [false, error];
+        }
     }
 
     async findByEmail(email) {
-        return await prisma.client.findUnique({ where: { email } });
+        try {
+            return await prisma.client.findUnique({ where: { email } });
+        } catch {
+            console.log("Erro inesperado, verifique as informações e tente novamente!");
+            return;
+        }
     }
 
     async detail(clientId) {
-        if (!clientId) {
-            throw new Error("Client ID is required");
-        }
+        try {
+            if (!clientId) {
+                throw new Error("ID do cliente é obrigatório");
+            }
 
-        const client = await prisma.client.findUnique({ where: { id: clientId } });
-        if (!client) {
-            throw new Error("Client not found");
+            const client = await prisma.client.findUnique({
+                where: { id: clientId },
+                select: {
+                    id: true,
+                    name: true,
+                    birthDate: true,
+                    cpf: true,
+                    email: true,
+                },
+            });
+            if (!client) {
+                throw new Error("Cliente não encontrado");
+            }
+            return client;
+        } catch (error) {
+            console.log(error);
+            return;
         }
-
-        return client;
     }
 
     async getAll() {
-        const clients = await prisma.client.findMany({
-            select: {
-                name: true,
-                clientId: true,
-            },
-        });
-        console.log("\n=== All Clients ===");
-        clients.forEach((client) => console.log(`Name: ${client.name}; ClientID: ${client.clientId}`));
+        try {
+            const clients = await prisma.client.findMany({
+                select: {
+                    name: true,
+                    id: true,
+                },
+            });
+            console.log("\n=== Todos os Clientes ===");
+            clients.forEach((client) => console.log(`Nome: ${client.name}; ID do Cliente: ${client.id}`));
+            const moreInfo = readline.question("Gostaria de ver mais informações sobre um cliente? (s/n)");
+            if (moreInfo.toLowerCase() === "s") {
+                const clientId = readline.questionInt("Por favor, insira o ID do Cliente:");
+                const clientDetails = await this.detail(clientId);
+                if (clientDetails) {
+                    console.log("\n=== Detalhes do Cliente ===");
+                    console.log(`Nome: ${clientDetails.name}`);
+                    console.log(`Data de Nascimento: ${clientDetails.birthDate}`);
+                    console.log(`CPF: ${clientDetails.cpf}`);
+                    console.log(`Email: ${clientDetails.email}`);
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            console.log("Erro inesperado, verifique as informações e tente novamente!");
+        }
     }
 }
 
 export default new Client();
-//LIST ALL CLIENTS IN MENU AND ASK TO CHOOSE 1 CLIENT ID TO DETAIL WICH WILL BE PASSES TO DETAIL METHOD(THINK ABOUT PUTTING LOG ON METHOD OR ON SYSTEM FUNCTION)

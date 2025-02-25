@@ -1,9 +1,10 @@
-const readline = require("readline-sync");
-const argon2 = require("argon2");
-const Client = require("./models/client");
-const Staff = require("./models/staff");
-const Room = require("./models/rooms");
-const Reservation = require("./models/reservations");
+import readline from "readline-sync";
+import argon2 from "argon2";
+import Client from "./models/client.js";
+import Staff from "./models/staff.js";
+import Room from "./models/rooms.js";
+import Reservation from "./models/reservations.js";
+import Rating from "./models/rating.js";
 
 class System {
     constructor() {
@@ -11,11 +12,11 @@ class System {
     }
 
     async initialize() {
-        console.log("\n=== Welcome to Hotel F-Luxo ===");
+        console.log("\n=== Bem-vindo ao Hotel F-Luxo ===");
         let option;
         do {
-            console.log("\n1. Login\n2. Register\n3. Exit");
-            option = readline.questionInt("Choose an option: ");
+            console.log("\n1. Login\n2. Registrar\n3. Sair");
+            option = readline.questionInt("Escolha uma opção: ");
             switch (option) {
                 case 1:
                     await this.login();
@@ -24,10 +25,10 @@ class System {
                     await this.register();
                     break;
                 case 3:
-                    console.log("Exiting the system...");
+                    console.log("Saindo do sistema...");
                     break;
                 default:
-                    console.log("Invalid option.");
+                    console.log("Opção inválida.");
             }
         } while (option !== 3);
     }
@@ -35,63 +36,72 @@ class System {
     async login() {
         console.log("\n=== Login ===");
         const email = readline.question("Email: ");
-        const password = readline.question("Password: ", { hideEchoBack: true });
+        const password = readline.question("Senha: ", { hideEchoBack: true });
 
         const client = await Client.findByEmail(email);
         const staff = await Staff.findByEmail(email);
 
         if (client && (await argon2.verify(client.password, password))) {
             this.loggedUser = { type: "client", ...client };
-            console.log(`Welcome, ${client.name}!`);
+            console.log(`Bem-vindo, ${client.name}!`);
             await this.clientMenu();
         } else if (staff && (await argon2.verify(staff.password, password))) {
             this.loggedUser = { type: "staff", ...staff };
-            console.log(`Welcome, ${staff.name} (Staff)!`);
+            console.log(`Bem-vindo, ${staff.name} (Staff)!`);
             await this.staffMenu();
         } else {
-            console.log("Invalid email or password.");
+            console.log("Email ou senha inválidos.");
         }
-        console.log("Invalid email or password.");
     }
 
     async register() {
-        console.log("\n=== Register ===");
-        console.log("1. Client\n2. Staff");
-        const type = readline.questionInt("Choose the user type: ");
+        console.log("\n=== Registrar ===");
+        console.log("1. Cliente\n2. Funcionário");
+        const type = readline.questionInt("Escolha o tipo de usuário: ");
 
         if (type === 1) {
-            const name = readline.question("Name: ");
+            const name = readline.question("Nome: ");
             const cpf = readline.question("CPF: ");
             const email = readline.question("Email: ");
-            const password = readline.question("Password: ", { hideEchoBack: true });
+            const password = readline.question("Senha: ", { hideEchoBack: true });
             const hashedpassword = await argon2.hash(password);
-            const birthDate = readline.question("Birth date (YYYY-MM-DD): ");
+            const birthDate = readline.question("Data de nascimento (AAAA-MM-DD): ");
 
-            await Client.create(name, birthDate, cpf, email, hashedpassword);
-            console.log("Client successfully registered!");
+            const created_user = await Client.create(name, birthDate, cpf, email, hashedpassword);
+            if (created_user[0]) {
+                console.log("Cliente registrado com sucesso!");
+            } else {
+                console.log("Falha ao registrar cliente, tente novamente!");
+                console.log(created_user[1].message);
+            }
         } else if (type === 2) {
-            const name = readline.question("Name: ");
+            const name = readline.question("Nome: ");
             const cpf = readline.question("CPF: ");
             const email = readline.question("Email: ");
-            const password = readline.question("Password: ", { hideEchoBack: true });
+            const password = readline.question("Senha: ", { hideEchoBack: true });
             const hashedpassword = await argon2.hash(password);
-            const username = readline.question("Username: ");
+            const username = readline.question("Nome de usuário: ");
 
-            await Staff.create(name, username, cpf, email, hashedpassword);
-            console.log("Staff successfully registered!");
+            const created_staff = await Staff.create(name, username, cpf, email, hashedpassword);
+            if (created_staff[0]) {
+                console.log("Funcionário registrado com sucesso!");
+            } else {
+                console.log("Falha ao registrar funcionário, tente novamente!");
+                console.log(created_staff[1].message);
+            }
         } else {
-            console.log("Invalid option.");
+            console.log("Opção inválida.");
         }
     }
 
     async clientMenu() {
         let option;
         do {
-            console.log("\n=== Client Menu ===");
+            console.log("\n=== Menu do Cliente ===");
             console.log(
-                "1. View Rooms\n2. Make a Reservation\n3. Cancel a Reservation\n4. View My Reservations\n5. Logout"
+                "1. Ver Quartos\n2. Fazer uma Reserva\n3. Cancelar uma Reserva\n4. Ver Minhas Reservas\n5. Avaliar uma Reserva\n6. Ver Minhas Avaliações\n7. Ver Meus Dados\n8. Sair"
             );
-            option = readline.questionInt("Choose an option: ");
+            option = readline.questionInt("Escolha uma opção: ");
 
             switch (option) {
                 case 1:
@@ -107,31 +117,44 @@ class System {
                     await Reservation.viewMyReservations(this.loggedUser.id);
                     break;
                 case 5:
-                    const reservationId = readline.questionInt("Reservation ID: ");
-                    const rating = readline.questionInt("Rating (1-5): ");
-                    const comment = readline.question("Comment: ");
+                    await Reservation.viewMyReservations(this.loggedUser.id);
+                    console.log("\nQual reserva estamos avaliando?");
+                    const reservationId = readline.questionInt("\nID da Reserva: ");
+                    const rating = readline.questionInt("Avaliação (1-5): ");
+                    const comment = readline.question("Comentário: ");
                     await Rating.create(this.loggedUser.id, reservationId, rating, comment);
                     break;
                 case 6:
                     await Rating.viewRatings(this.loggedUser.id);
                     break;
-                case 7:
-                    console.log("Logging out...");
+                case 8:
+                    console.log("Saindo...");
                     this.loggedUser = null;
                     break;
-                // ADD ARCHIVE AND CLASS RATES TO SAVE INTO THE DATABASE AND TO VIZUALIZE THE RATINGS PROTOTYPE OF CLASS RATING BELOW
+                case 7:
+                    const clientDetails = await Client.detail(this.loggedUser.id);
+                    if (clientDetails) {
+                        console.log("\n=== Detalhes do Cliente ===");
+                        console.log(`Nome: ${clientDetails.name}`);
+                        console.log(`Data de Nascimento: ${clientDetails.birthDate}`);
+                        console.log(`CPF: ${clientDetails.cpf}`);
+                        console.log(`Email: ${clientDetails.email}`);
+                    }
+                    break;
                 default:
-                    console.log("Invalid option.");
+                    console.log("Opção inválida.");
             }
-        } while (option !== 5);
+        } while (option !== 8);
     }
 
     async staffMenu() {
         let option;
         do {
-            console.log("\n=== Staff Menu ===");
-            console.log("1. View Reservations\n2. Add a Room\n3. Logout");
-            option = readline.questionInt("Choose an option: ");
+            console.log("\n=== Menu do Funcionário ===");
+            console.log(
+                "1. Ver Reservas\n2. Adicionar um Quarto\n3. Listar Clientes\n4. Ver Meus Dados\n5. Validar Reserva\n6. Sair"
+            );
+            option = readline.questionInt("Escolha uma opção: ");
 
             switch (option) {
                 case 1:
@@ -141,44 +164,34 @@ class System {
                     await Room.create();
                     break;
                 case 3:
-                    console.log("Logging out...");
+                    await Client.getAll();
+                    break;
+                case 6:
+                    console.log("Saindo...");
                     this.loggedUser = null;
                     break;
+                case 4:
+                    const staffDetails = await Staff.detail(this.loggedUser.id);
+                    if (staffDetails) {
+                        console.log("\n=== Detalhes do Staff ===");
+                        console.log(`Nome: ${staffDetails.name}`);
+                        console.log(`Data de Nascimento: ${staffDetails.birthDate}`);
+                        console.log(`CPF: ${staffDetails.cpf}`);
+                        console.log(`Email: ${staffDetails.email}`);
+                    }
+                    break;
+                case 5:
+                    await Reservation.viewAllReservations();
+                    const reservationtovalidateId = readline.questionInt("\nID da reserva que deseja mudar o status: ");
+                    await Reservation.updateStatus(reservationtovalidateId);
+                    break;
                 default:
-                    console.log("Invalid option.");
+                    console.log("Opção inválida.");
             }
-        } while (option !== 3);
+        } while (option !== 6);
     }
 }
 
 const system = new System();
 
 system.initialize();
-// Add functionality to rate a stay and view ratings
-class Rating {
-    static async create(clientId, reservationId, rating, comment) {
-        Prisma.ratings.create({
-            clientId: clientId,
-            reservation_id: reservationId,
-            rate: rating,
-            comment: comment,
-        });
-        console.log(
-            `Rating saved: Client ${clientId}, Reservation ${reservationId}, Rating ${rating}, Comment ${comment}`
-        );
-    }
-
-    static async viewRatings(clientId) {
-        const rating = Prisma.ratings.findMany({
-            where: {
-                clientId: clientId,
-            },
-            select: {
-                reservation_id: true,
-                rate: true,
-                comment: true,
-            },
-        });
-        console.log(`Displaying ratings for Client ${clientId}`);
-    }
-}
