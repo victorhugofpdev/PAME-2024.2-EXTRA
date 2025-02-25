@@ -1,7 +1,8 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
+import readline from "readline-sync";
+import Room from "./rooms.js";
+
 const prisma = new PrismaClient();
-const readline = require("readline-sync");
-const Room = require("./rooms");
 
 class Reservation {
     async create(clientId) {
@@ -10,7 +11,6 @@ class Reservation {
         const checkIn = readline.question("Check-in date (YYYY-MM-DD): ");
         const checkOut = readline.question("Check-out date (YYYY-MM-DD): ");
 
-        // Check if the room is already reserved for the given dates
         const existingReservations = await prisma.reservations.findMany({
             where: {
                 roomId,

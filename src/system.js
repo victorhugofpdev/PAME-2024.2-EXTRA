@@ -1,9 +1,9 @@
-const readline = require("readline-sync");
-const argon2 = require("argon2");
-const Client = require("./models/client");
-const Staff = require("./models/staff");
-const Room = require("./models/rooms");
-const Reservation = require("./models/reservations");
+import readline from "readline-sync";
+import argon2 from "argon2";
+import Client from "./models/client.js";
+import Staff from "./models/staff.js";
+import Room from "./models/rooms.js";
+import Reservation from "./models/reservations.js";
 
 class System {
     constructor() {
@@ -107,6 +107,8 @@ class System {
                     await Reservation.viewMyReservations(this.loggedUser.id);
                     break;
                 case 5:
+                    console.log("Wich reservation are we rating ?  ");
+                    await Reservation.viewAllReservations();
                     const reservationId = readline.questionInt("Reservation ID: ");
                     const rating = readline.questionInt("Rating (1-5): ");
                     const comment = readline.question("Comment: ");
@@ -119,7 +121,6 @@ class System {
                     console.log("Logging out...");
                     this.loggedUser = null;
                     break;
-                // ADD ARCHIVE AND CLASS RATES TO SAVE INTO THE DATABASE AND TO VIZUALIZE THE RATINGS PROTOTYPE OF CLASS RATING BELOW
                 default:
                     console.log("Invalid option.");
             }
@@ -154,31 +155,3 @@ class System {
 const system = new System();
 
 system.initialize();
-// Add functionality to rate a stay and view ratings
-class Rating {
-    static async create(clientId, reservationId, rating, comment) {
-        Prisma.ratings.create({
-            clientId: clientId,
-            reservation_id: reservationId,
-            rate: rating,
-            comment: comment,
-        });
-        console.log(
-            `Rating saved: Client ${clientId}, Reservation ${reservationId}, Rating ${rating}, Comment ${comment}`
-        );
-    }
-
-    static async viewRatings(clientId) {
-        const rating = Prisma.ratings.findMany({
-            where: {
-                clientId: clientId,
-            },
-            select: {
-                reservation_id: true,
-                rate: true,
-                comment: true,
-            },
-        });
-        console.log(`Displaying ratings for Client ${clientId}`);
-    }
-}

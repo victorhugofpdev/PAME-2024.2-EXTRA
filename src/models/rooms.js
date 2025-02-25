@@ -1,6 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-const readline = require("readline-sync");
+import readline from "readline-sync";
 
 class Room {
     async getAll() {
@@ -10,7 +10,6 @@ class Room {
     async create() {
         const name = readline.question("Room name: ");
 
-        // Check if the room already exists
         const existingRoom = await prisma.rooms.findUnique({
             where: { name },
         });
