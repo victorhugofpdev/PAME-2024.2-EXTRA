@@ -50,29 +50,48 @@ Caso não queira criar um novo registro, utilize os usuários base:
 
 ### **2.2 Comandos Principais**
 
-#### **Criar uma nova reserva:**
+#### **Para a area do cliente temos diversas opcoes, uma delas é criar uma nova reserva:**
 
 1. Escolha um quarto disponível.
 2. Informe a data de check-in e check-out.
 3. O sistema validará se o quarto está disponível.
 4. Se disponível, a reserva será confirmada.
 
-#### **Visualizar reservas de um cliente:**
+#### **Para area dos clientes tem a funcao Ver minhas reservas:**
 
-1. Insira o ID do cliente.
-2. O sistema listará todas as reservas vinculadas a esse cliente.
+1. Todas reservas feitas pelo usuario logado.
+---
 
-#### **Cancelar uma reserva:**
+#### **Para area de funcionarios temos tambem diversas opcoes, uma delas sendo visualizar reservas:**
+
+1. O sistema listará todas as reservas feitas.
+
+#### **Para area dos clientes: Cancelar uma reserva:**
 
 1. Informe o ID da reserva.
 2. Se não houver avaliações vinculadas, a reserva será removida.
 
-#### **Adicionar uma avaliação:**
+#### **Para area dos clientes: Adicionar uma avaliação:**
 
 1. Após o check-out, o cliente pode avaliar sua estadia.
 2. A avaliação inclui uma nota e um comentário.
 
+#### **Para area dos clientes: Visualizar uma avaliação:**
+
+1. Pode ver as avaliacoes feitas
+
 ---
+#### **Para area dos clientes e funcionarios tem a funcao Ver meus dados:**
+
+1. Retorna todos os dados cadastrados (menos as senhas)
+
+---
+#### **Para area dos clientes tem a funcao Ver quartos:**
+
+1. Os quartos cadastrados pelo hotel
+---
+
+### **Entre outras funcionalidades...
 
 ## **3. Tecnologias Utilizadas**
 
